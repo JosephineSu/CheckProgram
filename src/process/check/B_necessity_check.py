@@ -5,6 +5,7 @@
 # ********************************
 import pandas as pd
 import datetime
+from typing import Any
 
 Year = datetime.datetime.now().year
 Month = datetime.datetime.now().month
@@ -14,12 +15,16 @@ result = open(r'D:\研一\审核程序\src\审核结果输出\B_necessity_CheckR
 def read_file(path):
     return pd.read_csv(path, header=0)
 
+M_path = "D:\研一\审核程序\src\输入文件夹\M310151.摸底.csv"
+fp3 = open(M_path)
+tableM = read_file(fp3)
+
 def B_necessity_check(tableB):
     B,M = 92,993
     E = 95
-    M_path = "D:\研一\审核程序\src\输入文件夹\M310151.摸底.csv"
-    fp3 = open(M_path)
-    tableM = read_file(fp3)
+    # M_path = "D:\研一\审核程序\src\输入文件夹\M310151.摸底.csv"
+    # fp3 = open(M_path)
+    # tableM = read_file(fp3)
     #if M_91 == M_94:  #//开户拒访：开户时间和拒访时间相同
     #if tableB['M91'] == tableB['M94']:
      #   nextHousehold
@@ -65,18 +70,6 @@ def B_necessity_check(tableB):
         if tableB['B116'] < 1 or tableB['B116'] > 11:
             result.write('主要灶用能源状况越界，请填写（1-11）')
 
-        # #住家保姆、帮工或者集体居住户审核
-        # if tableM['M205'] == 4:
-        #     for i in range(tableB['B117'],tableB['B150']):
-        #         if i != 0:
-        #             result.write('住家保姆、帮工,不用填B117-B150')
-        # if tableM['M205'] == 4 and tableB['B101'] != 4:
-        #     result.write('住家保姆、帮工,B101要填4')
-        # if tableM['M205'] == 4 and tableB['B104'] != 10:
-        #     result.write('住家保姆、帮工,B104要填10')
-        # if tableM['M205'] == 4 and tableB['B112'] != 2:
-        #     result.write('住家保姆、帮工,B112要填2')
-
         #逻辑审核
         if tableB['B102'] == 8:
             if tableB['B103'] == 1 or tableB['B103'] == 2:
@@ -98,122 +91,130 @@ def B_necessity_check(tableB):
                     if tableB['B127'] <= 0:
                         result.write('现住房为租赁房者应填写B127')
     # print('ok')
-    for index, Modi in tableM.iterrows():
-        if tableB['SID'][:-2] == Modi['SID']:
-            # print(tableB['SID'][:-2],Modi['SID'])
-            # print ('bbbb')
-            if pd.isnull(tableB['B101']) == False:
-                # 住家保姆、帮工或者集体居住户审核
-                if Modi['M205'] == 4:
-                    for i in range(tableB['B117'], tableB['B150']):
-                        if i != 0:
-                            result.write('住家保姆、帮工,不用填B117-B150')
-                if Modi['M205'] == 4 and tableB['B101'] != 4:
-                    result.write('住家保姆、帮工,B101要填4')
-                if Modi['M205'] == 4 and tableB['B104'] != 10:
-                    result.write('住家保姆、帮工,B104要填10')
-                if Modi['M205'] == 4 and tableB['B112'] != 2:
-                    result.write('住家保姆、帮工,B112要填2')
+    df = tableM[tableB['SID'][:-2] == tableM['SID']]
+    for index, Modi in df.iterrows():
+        # if tableB['SID'][:-2] == Modi['SID']:
+        if pd.isnull(tableB['B101']) == False:
+            # 住家保姆、帮工或者集体居住户审核
+            if Modi['M205'] == 4:
+                # value = tableB.apply(lambda : x['B117']+x['B118'], axis=1)
+                if tableB['B117'] + tableB['B118'] + tableB['B119'] + tableB['B120'] + tableB['B121'] + tableB['B122'] \
+                        + tableB['B123'] + tableB['B124'] + tableB['B125'] + tableB['B126'] + tableB['B127'] + tableB[
+                    'B128'] \
+                        + tableB['B129'] + tableB['B130'] + tableB['B131'] + tableB['B132'] + tableB['B133'] + tableB[
+                    'B134'] \
+                        + tableB['B135'] + tableB['B136'] + tableB['B137'] + tableB['B138'] + tableB['B139'] + tableB[
+                    'B140'] \
+                        + tableB['B141'] + tableB['B142'] + tableB['B143'] + tableB['B144'] + tableB['B145'] + tableB[
+                    'B146'] \
+                        + tableB['B147'] + tableB['B148'] + tableB['B149'] + tableB['B150'] > 0:
+                    result.write('住家保姆、帮工,不用填B117-B150')
+            if Modi['M205'] == 4 and tableB['B101'] != 4:
+                result.write('住家保姆、帮工,B101要填4')
+            if Modi['M205'] == 4 and tableB['B104'] != 10:
+                result.write('住家保姆、帮工,B104要填10')
+            if Modi['M205'] == 4 and tableB['B112'] != 2:
+                result.write('住家保姆、帮工,B112要填2')
 
-            if Modi['M101'] == 1 and pd.isnull(tableB['B101']) == False:
-                #B1.2 自有现住房情况
-                if tableB['B104'] >= 3 and tableB['B104'] <= 8:
-                    if tableB['B118'] < 0.5 or tableB['B118'] >= 999:
-                        result.write('B118自有现住房市场价越界')
-                    if tableB['B119'] < 100 or tableB['B119'] >= 9999:
-                        result.write('B119同类住房的市场价月租金越界')
-                    if tableB['B120'] < 1949 or tableB['B120'] > Year:
-                        result.write('B120现住房购(建)房时间越界')
-                    if tableB['B121'] < 0.5 or tableB['B121'] >= 999:
-                        result.write('B121购(建)房总金额越界')
-                    if tableB['B122']!=0 :
-                        if tableB['B122'] < 0.1 or tableB['B122'] >= 999:
-                            result.write('B122购(建)房时借贷总额(不含利息)越界')
-                        if tableB['B125'] < 1 or tableB['B125'] > 30:
-                            result.write('B125借贷款还款总年限越界')
-                    if pd.isnull(tableB['B123']) == False:
-                        if tableB['B123'] < 1 or tableB['B123'] >= 999:
-                            result.write('B123购(建)房按揭贷款越界')
+        if Modi['M101'] == 1 and pd.isnull(tableB['B101']) == False:
+            # B1.2 自有现住房情况
+            if tableB['B104'] >= 3 and tableB['B104'] <= 8:
+                if tableB['B118'] < 0.5 or tableB['B118'] >= 999:
+                    result.write('B118自有现住房市场价越界')
+                if tableB['B119'] < 100 or tableB['B119'] >= 9999:
+                    result.write('B119同类住房的市场价月租金越界')
+                if tableB['B120'] < 1949 or tableB['B120'] > Year:
+                    result.write('B120现住房购(建)房时间越界')
+                if tableB['B121'] < 0.5 or tableB['B121'] >= 999:
+                    result.write('B121购(建)房总金额越界')
+                if tableB['B122'] != 0:
+                    if tableB['B122'] < 0.1 or tableB['B122'] >= 999:
+                        result.write('B122购(建)房时借贷总额(不含利息)越界')
+                    if tableB['B125'] < 1 or tableB['B125'] > 30:
+                        result.write('B125借贷款还款总年限越界')
+                if pd.isnull(tableB['B123']) == False:
+                    if tableB['B123'] < 1 or tableB['B123'] >= 999:
+                        result.write('B123购(建)房按揭贷款越界')
+                if pd.isnull(tableB['B124']) == False:
+                    if tableB['B124'] < 0.01 or tableB['B124'] >= 99:
+                        result.write('B124购(建)房时借贷款总利息越界')
+                if pd.isnull(tableB['B125']) == False:
+                    if tableB['B126'] != 1 and tableB['B126'] != 2:
+                        result.write('B126现在是否还在还款越界')
+                if tableB['B121'] < tableB['B122']:
+                    result.write('借贷款总额不应大于购(建)房总金额')
+                if tableB['B122'] < tableB['B123']:
+                    result.write('按揭贷款不应大于借贷款总额')
+                if tableB['B122'] == 0:
                     if pd.isnull(tableB['B124']) == False:
-                        if tableB['B124'] < 0.01 or tableB['B124'] >= 99:
-                            result.write('B124购(建)房时借贷款总利息越界')
+                        result.write('没借贷款不应有利息')
                     if pd.isnull(tableB['B125']) == False:
-                        if tableB['B126'] != 1 and tableB['B126'] != 2:
-                            result.write('B126现在是否还在还款越界')
-                    if tableB['B121'] < tableB['B122']:
-                        result.write('借贷款总额不应大于购(建)房总金额')
-                    if tableB['B122'] < tableB['B123']:
-                        result.write('按揭贷款不应大于借贷款总额')
-                    if tableB['B122'] == 0:
-                        if pd.isnull(tableB['B124'])== False:
-                            result.write('没借贷款不应有利息')
-                        if pd.isnull(tableB['B125'])== False:
-                            result.write('没借贷款不应填还款总年限')
-                        if pd.isnull(tableB['B126'])== False:
-                            result.write('没借贷款不应填写B126')
-                #B1.3 期内拥有其它房屋情况
-                if tableB['B128'] > 0:
-                    if tableB['B128'] < 5 or tableB['B128'] > 999:
-                        result.write('B128出租住房建筑面积填报越界')
-                    if tableB['B129'] < 0.3 or tableB['B129'] >= 999:
-                        result.write('B129出租住房市场价越界')
-                    if tableB['B130'] < 100 or tableB['B130'] >= 9999:
-                        result.write('B130出租住房月租金越界')
-                if tableB["B131"] > 0:
-                    if tableB['B131'] < 1 or tableB['B131'] > 999:
-                        result.write('B131出租商用建筑物建筑面积填报越界')
-                    if tableB['B132'] < 0.3 or tableB['B132'] >= 999:
-                        result.write('B132出租商用建筑物市场价越界')
-                if tableB["B134"] > 0:
-                    if tableB['B134'] < 1 or tableB['B134'] > 999:
-                        result.write('B134偶尔居住房建筑面积填报越界')
-                    if tableB['B135'] < 0.3 or tableB['B135'] >= 999:
-                        result.write('B135偶尔居住房市场价越界')
-                if tableB["B136"] > 0:
-                    if tableB['B136'] < 1 or tableB['B136'] > 999:
-                        result.write('B136空宅或其他用途住房建筑面积填报越界')
-                    if tableB['B137'] < 0.3 or tableB['B137'] >= 999:
-                        result.write('B137空宅或其他用途住房市场价越界')
+                        result.write('没借贷款不应填还款总年限')
+                    if pd.isnull(tableB['B126']) == False:
+                        result.write('没借贷款不应填写B126')
+            # B1.3 期内拥有其它房屋情况
+            if tableB['B128'] > 0:
+                if tableB['B128'] < 5 or tableB['B128'] > 999:
+                    result.write('B128出租住房建筑面积填报越界')
+                if tableB['B129'] < 0.3 or tableB['B129'] >= 999:
+                    result.write('B129出租住房市场价越界')
+                if tableB['B130'] < 100 or tableB['B130'] >= 9999:
+                    result.write('B130出租住房月租金越界')
+            if tableB["B131"] > 0:
+                if tableB['B131'] < 1 or tableB['B131'] > 999:
+                    result.write('B131出租商用建筑物建筑面积填报越界')
+                if tableB['B132'] < 0.3 or tableB['B132'] >= 999:
+                    result.write('B132出租商用建筑物市场价越界')
+            if tableB["B134"] > 0:
+                if tableB['B134'] < 1 or tableB['B134'] > 999:
+                    result.write('B134偶尔居住房建筑面积填报越界')
+                if tableB['B135'] < 0.3 or tableB['B135'] >= 999:
+                    result.write('B135偶尔居住房市场价越界')
+            if tableB["B136"] > 0:
+                if tableB['B136'] < 1 or tableB['B136'] > 999:
+                    result.write('B136空宅或其他用途住房建筑面积填报越界')
+                if tableB['B137'] < 0.3 or tableB['B137'] >= 999:
+                    result.write('B137空宅或其他用途住房市场价越界')
 
-                #B1.4新购住房情况审核
-                if tableB['B104'] >= 4 and tableB['B104'] <= 7 and tableB['B120'] == Year:
-                    if tableB['B138'] < 5 or tableB['B138'] >= 999:
-                        result.write('新购住房建筑面积越界')
-                    if tableB['B140'] != 0:
-                        if tableB['B140'] < 1 or tableB['B140'] >= 999:
-                            result.write('新购住房借贷款总额(不含利息)越界')
-                        if tableB['B141'] < 1 or tableB['B141'] >= 999:
-                            result.write('新购住房按界揭贷款越')
-                        if tableB['B142'] < 1 or tableB['B142'] >= 99:
-                            result.write('新购住房借贷款总利息越界')
-                        if tableB['B143'] < 1 or tableB['B143'] > 30:
-                            result.write('新购住房借贷款还款总年限越界')
-                        if tableB['B142']/tableB['B140'] < 0 or tableB['B142']/tableB['B140'] >= 0.15:
-                            result.write('贷款利率越界')
-                        if tableB['B143'] < 3 or tableB['B143'] > 30:
-                            result.write('还款年限越界')
-                    if tableB['B139'] <= tableB['B140']:
-                        result.write('借贷款总额不应大于购(建)房总金额')
-                    if tableB['B140'] < tableB['B141']:
-                        result.write('按揭贷款不应大于借贷款总额')
-                    if tableB['B140'] == 0:
-                        if tableB['B142'] !=0:
-                            result.write('没借贷款不应有利息')
-                        if tableB['B143'] != 0:
-                            result.write('没借贷款不应填还款总年限')
+            # B1.4新购住房情况审核
+            if tableB['B104'] >= 4 and tableB['B104'] <= 7 and tableB['B120'] == Year:
+                if tableB['B138'] < 5 or tableB['B138'] >= 999:
+                    result.write('新购住房建筑面积越界')
+                if tableB['B140'] != 0:
+                    if tableB['B140'] < 1 or tableB['B140'] >= 999:
+                        result.write('新购住房借贷款总额(不含利息)越界')
+                    if tableB['B141'] < 1 or tableB['B141'] >= 999:
+                        result.write('新购住房按界揭贷款越')
+                    if tableB['B142'] < 1 or tableB['B142'] >= 99:
+                        result.write('新购住房借贷款总利息越界')
+                    if tableB['B143'] < 1 or tableB['B143'] > 30:
+                        result.write('新购住房借贷款还款总年限越界')
+                    if tableB['B142'] / tableB['B140'] < 0 or tableB['B142'] / tableB['B140'] >= 0.15:
+                        result.write('贷款利率越界')
+                    if tableB['B143'] < 3 or tableB['B143'] > 30:
+                        result.write('还款年限越界')
+                if tableB['B139'] <= tableB['B140']:
+                    result.write('借贷款总额不应大于购(建)房总金额')
+                if tableB['B140'] < tableB['B141']:
+                    result.write('按揭贷款不应大于借贷款总额')
+                if tableB['B140'] == 0:
+                    if tableB['B142'] != 0:
+                        result.write('没借贷款不应有利息')
+                    if tableB['B143'] != 0:
+                        result.write('没借贷款不应填还款总年限')
 
-                #B1.5 新住房情况审核
-                if tableB['B104'] == 3 and tableB['B120'] == Year:
-                    if tableB['B144'] != 0:
-                        if tableB['B144'] < 5 or tableB['B144'] >= 999:
-                            result.write('新住房建筑面积越界')
-                    if tableB['B145'] != tableB['B146'] + tableB['B147'] + tableB['B148'] + tableB['B149']:
-                        result.write('建房资金来源不平')
+            # B1.5 新住房情况审核
+            if tableB['B104'] == 3 and tableB['B120'] == Year:
+                if tableB['B144'] != 0:
+                    if tableB['B144'] < 5 or tableB['B144'] >= 999:
+                        result.write('新住房建筑面积越界')
+                if tableB['B145'] != tableB['B146'] + tableB['B147'] + tableB['B148'] + tableB['B149']:
+                    result.write('建房资金来源不平')
 
-                #B1.6 期内住房大修或装修费用
-                if tableB['B150'] > 99:
-                    result.write('住房大修或装修费用越界')
-
+            # B1.6 期内住房大修或装修费用
+            if tableB['B150'] > 99:
+                result.write('住房大修或装修费用越界')
+            # break
     #B2部分 耐用消费品情况
     # if tableB['B101']:
     if pd.isnull(tableB['B101']) == False:
